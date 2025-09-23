@@ -82,7 +82,16 @@ export default function AvatarViewer({ image, landmarks, onReset }: AvatarViewer
     initializeScene();
 
     return () => {
-      rendererRef.current?.dispose();
+      // Clean up Three.js resources
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
+      if (avatarRef.current) {
+        avatarRef.current.dispose();
+      }
+      if (sceneRef.current) {
+        sceneRef.current.clear();
+      }
     };
   }, [landmarks, image]);
 
@@ -100,12 +109,20 @@ export default function AvatarViewer({ image, landmarks, onReset }: AvatarViewer
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           Your 3D Avatar
         </h2>
-        <button
-          onClick={onReset}
-          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors"
-        >
-          Upload New Photo
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setSelectedGlasses(null)}
+            className="px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-800 dark:text-blue-200 rounded-lg transition-colors"
+          >
+            Remove Glasses
+          </button>
+          <button
+            onClick={onReset}
+            className="px-4 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-800 dark:text-red-200 rounded-lg transition-colors"
+          >
+            Remove Photo
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

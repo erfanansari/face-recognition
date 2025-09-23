@@ -22,7 +22,7 @@ export default function FileUpload({ onImageUpload, onLandmarksDetected }: FileU
       onImageUpload(imageUrl);
 
       // Process face detection
-      const detector = new FileDetector();
+      const detector = FileDetector.getInstance();
       const landmarks = await detector.detectFaceLandmarks(file);
 
       if (landmarks) {

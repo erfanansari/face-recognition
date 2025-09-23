@@ -258,4 +258,22 @@ export class FaceAvatar {
     this.glassesMesh.position.set(0, 0.1, 0.1);
     this.glassesMesh.scale.setScalar(1.2);
   }
+
+  dispose() {
+    // Clean up all Three.js resources
+    if (this.faceMesh) {
+      this.faceMesh.geometry.dispose();
+      if (Array.isArray(this.faceMesh.material)) {
+        this.faceMesh.material.forEach(mat => mat.dispose());
+      } else {
+        this.faceMesh.material.dispose();
+      }
+    }
+
+    this.removeGlasses();
+
+    if (this.faceGroup.parent) {
+      this.faceGroup.parent.remove(this.faceGroup);
+    }
+  }
 }
