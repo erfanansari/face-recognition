@@ -298,8 +298,6 @@ export default function AvatarViewer({}: AvatarViewerProps) {
   const glassesOptions = [
     { type: 'classic', label: 'Classic', description: 'Timeless aviator style', file: '/sunglasses/classic.glb' },
     { type: 'modern', label: 'Modern', description: 'Contemporary design', file: '/sunglasses/modern.glb' },
-    { type: 'sport', label: 'Sport', description: 'Active lifestyle', file: '/sunglasses/sport.glb' },
-    { type: 'vintage', label: 'Vintage', description: 'Retro inspired', file: '/sunglasses/vintage.glb' },
     { type: 'premium', label: 'Premium', description: 'Luxury materials', file: '/sunglasses/premium.glb' },
     { type: 'designer', label: 'Designer', description: 'Fashion forward', file: '/sunglasses/designer.glb' },
     { type: 'retro', label: 'Retro', description: 'Pixel art inspired', file: '/sunglasses/retro.glb' },
