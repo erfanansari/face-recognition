@@ -301,7 +301,6 @@ export default function AvatarViewer({}: AvatarViewerProps) {
     { type: 'premium', label: 'Premium', description: 'Luxury materials', file: '/sunglasses/premium.glb' },
     { type: 'designer', label: 'Designer', description: 'Fashion forward', file: '/sunglasses/designer.glb' },
     { type: 'retro', label: 'Retro', description: 'Pixel art inspired', file: '/sunglasses/retro.glb' },
-    { type: 'aviator', label: 'Aviator', description: 'Military heritage', file: '/sunglasses/aviator.glb' },
     { type: 'wayfare', label: 'Wayfare', description: 'Iconic rectangle frame', file: '/sunglasses/wayfare.glb' },
     { type: 'clubmaster', label: 'Clubmaster', description: 'Sophisticated browline', file: '/sunglasses/clubmaster.glb' },
   ];
