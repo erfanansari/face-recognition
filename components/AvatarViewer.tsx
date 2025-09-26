@@ -301,7 +301,6 @@ export default function AvatarViewer({}: AvatarViewerProps) {
     { type: 'premium', label: 'Premium', description: 'Luxury materials', file: '/sunglasses/premium.glb' },
     { type: 'designer', label: 'Designer', description: 'Fashion forward', file: '/sunglasses/designer.glb' },
     { type: 'retro', label: 'Retro', description: 'Pixel art inspired', file: '/sunglasses/retro.glb' },
-    { type: 'wayfare', label: 'Wayfare', description: 'Iconic rectangle frame', file: '/sunglasses/wayfare.glb' },
     { type: 'clubmaster', label: 'Clubmaster', description: 'Sophisticated browline', file: '/sunglasses/clubmaster.glb' },
   ];
 
@@ -394,22 +393,22 @@ export default function AvatarViewer({}: AvatarViewerProps) {
 
         {/* Accessories Panel */}
         {!isLoading && !error && (
-          <div className="lg:w-96">
-            <div className="bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-800 shadow-xl p-6 sticky top-8">
+          <div className="lg:w-80">
+            <div className="bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-800 shadow-xl p-4 sticky top-8">
 
               {/* Panel Header */}
-              <div className="mb-8">
-                <h3 className="text-2xl font-semibold text-white mb-2">Eyewear Collection</h3>
-                <div className="w-12 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+              <div className="mb-6">
+                <h3 className="text-xl font-semibold text-white mb-2">Eyewear Collection</h3>
+                <div className="w-10 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
               </div>
 
               {/* Glasses List */}
-              <div className="space-y-3 mb-8">
+              <div className="space-y-2 mb-6">
                 {glassesOptions.map((option) => (
                   <button
                     key={option.type}
                     onClick={() => handleGlassesSelect(option.type)}
-                    className={`w-full p-4 rounded-lg border transition-all duration-200 text-left group ${
+                    className={`w-full p-3 rounded-lg border transition-all duration-200 text-left group ${
                       selectedGlasses === option.type
                         ? 'border-blue-500 bg-blue-500/5 shadow-md'
                         : 'border-gray-700 hover:border-gray-600 bg-gray-800/30 hover:bg-gray-800/50'
@@ -417,14 +416,14 @@ export default function AvatarViewer({}: AvatarViewerProps) {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-white font-medium text-base mb-1">
+                        <div className="text-white font-medium text-sm mb-0.5">
                           {option.label}
                         </div>
-                        <div className="text-gray-400 text-sm">
+                        <div className="text-gray-400 text-xs">
                           {option.description}
                         </div>
                       </div>
-                      <div className={`w-3 h-3 rounded-full border-2 transition-colors ${
+                      <div className={`w-2.5 h-2.5 rounded-full border-2 transition-colors ${
                         selectedGlasses === option.type
                           ? 'border-blue-500 bg-blue-500'
                           : 'border-gray-500 group-hover:border-gray-400'
@@ -442,19 +441,19 @@ export default function AvatarViewer({}: AvatarViewerProps) {
               {selectedGlasses && (
                 <button
                   onClick={() => handleGlassesSelect('')}
-                  className="w-full p-3 rounded-lg border border-gray-600 bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 text-gray-300 hover:text-white"
+                  className="w-full p-2.5 rounded-lg border border-gray-600 bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 text-gray-300 hover:text-white"
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    <span className="font-medium">Clear Selection</span>
+                    <span className="font-medium text-sm">Clear Selection</span>
                   </div>
                 </button>
               )}
 
               {/* Footer Info */}
-              <div className="mt-8 pt-6 border-t border-gray-800">
+              <div className="mt-6 pt-4 border-t border-gray-800">
                 <div className="text-center space-y-1">
                   <p className="text-xs text-gray-500 font-medium">
                     WebGL Powered Rendering
