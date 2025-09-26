@@ -49,7 +49,7 @@ export default function AvatarViewer({}: AvatarViewerProps) {
 
         // Create camera
         const camera = new THREE.PerspectiveCamera(45, 800 / 600, 1, 2000);
-        camera.position.z = 120; // Match Three.js decals example
+        camera.position.z = 50; // Zoom in closer for head model
 
         setLoadingProgress(30);
 
@@ -82,8 +82,8 @@ export default function AvatarViewer({}: AvatarViewerProps) {
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.maxDistance = 300;
-        controls.minDistance = 50;
+        controls.maxDistance = 100;
+        controls.minDistance = 20;
         controls.target.set(0, 0, 0); // Focus on center
         controls.autoRotate = false;
         controls.enablePan = true;
@@ -128,8 +128,8 @@ export default function AvatarViewer({}: AvatarViewerProps) {
     try {
       setLoadingProgress(50);
 
-      // Use realistic human head model from Three.js examples
-      const avatarUrl = 'https://threejs.org/examples/models/gltf/LeePerrySmith/LeePerrySmith.glb';
+      // Use local male head sculpt model
+      const avatarUrl = '/male_head_sculpt.glb';
 
       const loader = new GLTFLoader();
       setLoadingProgress(60);
@@ -142,8 +142,8 @@ export default function AvatarViewer({}: AvatarViewerProps) {
 
             const avatar = gltf.scene;
 
-            // Scale and position the head properly (matching Three.js decals example)
-            avatar.scale.multiplyScalar(10); // Match Three.js decals example scaling
+            // Scale and position the head properly (balanced size)
+            avatar.scale.multiplyScalar(25); // Balanced scaling for custom head model
             avatar.position.set(0, 0, 0); // Center the head
 
             // Setup materials and shadows for realistic rendering
@@ -222,96 +222,157 @@ export default function AvatarViewer({}: AvatarViewerProps) {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          Realistic 3D Head Model
-        </h2>
-        <p className="text-gray-600 dark:text-gray-300">
-          High-quality human head with detailed facial features
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black">
+      {/* Modern Header */}
+      <div className="relative z-10 pt-8 pb-4">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
+            Virtual Try-On Studio
+          </h1>
+          <p className="text-gray-400 text-lg">
+            Realistic 3D avatar with AI-powered accessories
+          </p>
+        </div>
       </div>
 
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          {error && (
-            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-red-700 dark:text-red-300">{error}</p>
-            </div>
-          )}
+      {/* Main Content Area */}
+      <div className="flex flex-col lg:flex-row gap-6 px-4 lg:px-8 max-w-7xl mx-auto">
 
-          <div className="relative">
+        {/* 3D Viewport - Main Focus */}
+        <div className="flex-1 relative">
+          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-700/50 shadow-2xl overflow-hidden">
+
+            {/* Error State */}
+            {error && (
+              <div className="absolute top-4 left-4 right-4 z-20">
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 backdrop-blur-sm">
+                  <p className="text-red-400 text-center">{error}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Loading State */}
             {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-lg z-10">
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm z-10">
                 <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600 dark:text-gray-300">Loading realistic head model...</p>
-                  <div className="w-64 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                  <div className="relative">
+                    <div className="w-16 h-16 border-4 border-gray-600 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-8 h-8 bg-blue-500 rounded-full animate-pulse"></div>
+                    </div>
+                  </div>
+                  <p className="text-gray-300 text-lg mb-4">Loading 3D Model...</p>
+
+                  {/* Modern Progress Bar */}
+                  <div className="w-80 bg-gray-700 rounded-full h-2 overflow-hidden">
                     <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500 ease-out"
                       style={{ width: `${loadingProgress}%` }}
                     ></div>
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  <p className="text-blue-400 text-sm mt-2 font-mono">
                     {loadingProgress}%
                   </p>
                 </div>
               </div>
             )}
+
+            {/* 3D Canvas */}
             <canvas
               ref={canvasRef}
-              className="w-full h-auto rounded-lg"
-              style={{ minHeight: '600px' }}
+              className="w-full rounded-2xl"
+              style={{ height: '70vh', minHeight: '500px' }}
             />
-          </div>
 
-          {!isLoading && !error && (
-            <>
-              <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-                <strong>Controls:</strong> Drag to rotate • Scroll to zoom • Right-click to pan
-              </div>
-              <div className="mt-2 text-xs text-gray-400 dark:text-gray-500 text-center">
-                Photorealistic human head model with detailed facial anatomy
-              </div>
-
-              {/* Glasses Selection */}
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-4">
-                  Try On Glasses
-                </h3>
-                <div className="flex justify-center gap-4">
-                  {glassesOptions.map((option) => (
-                    <button
-                      key={option.type}
-                      onClick={() => handleGlassesSelect(option.type)}
-                      className={`p-4 rounded-lg border-2 transition-all duration-200 ${
-                        selectedGlasses === option.type
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                          : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-400'
-                      }`}
-                    >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {option.label}
-                      </div>
-                    </button>
-                  ))}
-                  {selectedGlasses && (
-                    <button
-                      onClick={() => handleGlassesSelect('')}
-                      className="p-4 rounded-lg border-2 border-red-200 dark:border-red-600 hover:border-red-300 dark:hover:border-red-400 transition-all duration-200"
-                    >
-                      <div className="text-2xl mb-2">❌</div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        Remove
-                      </div>
-                    </button>
-                  )}
+            {/* Controls Overlay */}
+            {!isLoading && !error && (
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-black/40 backdrop-blur-md rounded-xl p-3 border border-gray-600/30">
+                  <div className="flex items-center justify-center gap-6 text-xs text-gray-300">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                      <span>Drag to rotate</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                      <span>Scroll to zoom</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                      <span>Right-click to pan</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </>
-          )}
+            )}
+          </div>
         </div>
+
+        {/* Accessories Panel */}
+        {!isLoading && !error && (
+          <div className="lg:w-80">
+            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-700/50 shadow-2xl p-6 sticky top-8">
+
+              {/* Panel Header */}
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-bold text-white mb-2">Accessories</h3>
+                <p className="text-gray-400 text-sm">Choose your perfect style</p>
+              </div>
+
+              {/* Glasses Grid */}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {glassesOptions.map((option) => (
+                  <button
+                    key={option.type}
+                    onClick={() => handleGlassesSelect(option.type)}
+                    className={`group relative p-4 rounded-xl border-2 transition-all duration-300 hover:scale-105 ${
+                      selectedGlasses === option.type
+                        ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20'
+                        : 'border-gray-600 hover:border-gray-500 bg-gray-800/30'
+                    }`}
+                  >
+                    <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">
+                      {option.emoji}
+                    </div>
+                    <div className="text-sm font-medium text-white">
+                      {option.label}
+                    </div>
+                    {selectedGlasses === option.type && (
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Remove Button */}
+              {selectedGlasses && (
+                <button
+                  onClick={() => handleGlassesSelect('')}
+                  className="w-full p-3 rounded-xl border-2 border-red-500/30 bg-red-500/10 hover:bg-red-500/20 transition-all duration-300 group"
+                >
+                  <div className="flex items-center justify-center gap-2 text-red-400">
+                    <span className="text-lg group-hover:scale-110 transition-transform">❌</span>
+                    <span className="font-medium">Remove Glasses</span>
+                  </div>
+                </button>
+              )}
+
+              {/* Stats/Info */}
+              <div className="mt-6 pt-6 border-t border-gray-700">
+                <div className="text-center">
+                  <p className="text-xs text-gray-500">
+                    Powered by WebGL & Three.js
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Real-time 3D rendering
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
