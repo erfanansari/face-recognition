@@ -19,6 +19,8 @@ export default function AvatarViewer({}: AvatarViewerProps) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [selectedGlasses, setSelectedGlasses] = useState<string | null>(null);
+  const [glassesModels, setGlassesModels] = useState<{[key: string]: THREE.Object3D}>({});
+  const [currentGlassesObject, setCurrentGlassesObject] = useState<THREE.Object3D | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -112,6 +114,9 @@ export default function AvatarViewer({}: AvatarViewerProps) {
 
     return () => {
       // Clean up Three.js resources
+      if (currentGlassesObject && sceneRef.current) {
+        sceneRef.current.remove(currentGlassesObject);
+      }
       if (faceAvatarRef.current) {
         faceAvatarRef.current.dispose();
       }
@@ -201,24 +206,97 @@ export default function AvatarViewer({}: AvatarViewerProps) {
     setLoadingProgress(100);
   };
 
-  const handleGlassesSelect = (glassesType: string) => {
-    if (faceAvatarRef.current) {
-      if (selectedGlasses === glassesType) {
-        // Remove glasses if same type is selected
-        faceAvatarRef.current.removeGlasses();
-        setSelectedGlasses(null);
+  const loadGlassesModel = async (glassesFile: string): Promise<THREE.Object3D> => {
+    const loader = new GLTFLoader();
+    return new Promise((resolve, reject) => {
+      loader.load(
+        glassesFile,
+        (gltf) => {
+          const glasses = gltf.scene.clone();
+
+          // Scale and position the glasses properly for the head
+          glasses.scale.setScalar(25); // Match head scaling
+          glasses.position.set(0, 2, 12); // Position in front of eyes
+
+          // Setup materials for proper rendering
+          glasses.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+              if (child.material) {
+                if (Array.isArray(child.material)) {
+                  child.material.forEach((mat) => {
+                    if (mat instanceof THREE.MeshStandardMaterial) {
+                      mat.envMapIntensity = 0.5;
+                    }
+                  });
+                } else if (child.material instanceof THREE.MeshStandardMaterial) {
+                  child.material.envMapIntensity = 0.5;
+                }
+              }
+            }
+          });
+
+          resolve(glasses);
+        },
+        undefined,
+        reject
+      );
+    });
+  };
+
+  const handleGlassesSelect = async (glassesType: string) => {
+    if (!sceneRef.current) return;
+
+    // Remove current glasses
+    if (currentGlassesObject) {
+      sceneRef.current.remove(currentGlassesObject);
+      setCurrentGlassesObject(null);
+    }
+
+    if (selectedGlasses === glassesType) {
+      // Remove glasses if same type is selected
+      setSelectedGlasses(null);
+      return;
+    }
+
+    // Find the glasses option
+    const glassesOption = glassesOptions.find(option => option.type === glassesType);
+    if (!glassesOption) return;
+
+    try {
+      // Check if we already loaded this model
+      if (glassesModels[glassesType]) {
+        const glasses = glassesModels[glassesType].clone();
+        sceneRef.current.add(glasses);
+        setCurrentGlassesObject(glasses);
+        setSelectedGlasses(glassesType);
       } else {
-        // Add new glasses
-        faceAvatarRef.current.addGlasses(glassesType);
+        // Load the model for the first time
+        const glasses = await loadGlassesModel(glassesOption.file);
+
+        // Store the loaded model for reuse
+        setGlassesModels(prev => ({
+          ...prev,
+          [glassesType]: glasses.clone()
+        }));
+
+        sceneRef.current.add(glasses);
+        setCurrentGlassesObject(glasses);
         setSelectedGlasses(glassesType);
       }
+    } catch (error) {
+      console.error('Error loading glasses model:', error);
     }
   };
 
   const glassesOptions = [
-    { type: 'aviator', label: 'Aviator', emoji: '🕶️' },
-    { type: 'round', label: 'Round', emoji: '👓' },
-    { type: 'square', label: 'Square', emoji: '🤓' },
+    { type: 'eye_glasses', label: 'Eye Glasses', emoji: '👓', file: '/sunglasses/eye_glasses.glb' },
+    { type: 'sun_glass_1', label: 'Classic', emoji: '🕶️', file: '/sunglasses/sun_glass (1).glb' },
+    { type: 'sun_glass', label: 'Modern', emoji: '🕶️', file: '/sunglasses/sun_glass.glb' },
+    { type: 'sunglass', label: 'Sport', emoji: '🏃‍♂️', file: '/sunglasses/sunglass.glb' },
+    { type: 'sunglasses_1', label: 'Vintage', emoji: '🌟', file: '/sunglasses/sunglasses (1).glb' },
+    { type: 'sunglasses', label: 'Premium', emoji: '💎', file: '/sunglasses/sunglasses.glb' },
   ];
 
   return (
@@ -320,21 +398,21 @@ export default function AvatarViewer({}: AvatarViewerProps) {
               </div>
 
               {/* Glasses Grid */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="grid grid-cols-3 gap-2 mb-6">
                 {glassesOptions.map((option) => (
                   <button
                     key={option.type}
                     onClick={() => handleGlassesSelect(option.type)}
-                    className={`group relative p-4 rounded-xl border-2 transition-all duration-300 hover:scale-105 ${
+                    className={`group relative p-3 rounded-lg border-2 transition-all duration-300 hover:scale-105 ${
                       selectedGlasses === option.type
                         ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20'
                         : 'border-gray-600 hover:border-gray-500 bg-gray-800/30'
                     }`}
                   >
-                    <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">
+                    <div className="text-xl mb-1 group-hover:scale-110 transition-transform">
                       {option.emoji}
                     </div>
-                    <div className="text-sm font-medium text-white">
+                    <div className="text-xs font-medium text-white">
                       {option.label}
                     </div>
                     {selectedGlasses === option.type && (
