@@ -12,103 +12,216 @@ export class FaceAvatar {
     this.scene.add(this.faceGroup);
   }
 
-  async createFromLandmarks(landmarks: any, imageUrl: string) {
-    if (!landmarks || !landmarks.landmarks) {
-      throw new Error('Invalid landmarks data');
-    }
+  async createAvatar(gender: 'male' | 'female') {
+    // Create the appropriate head geometry
+    const geometry = gender === 'male' ? this.createMaleHeadGeometry() : this.createFemaleHeadGeometry();
 
-    // Create face geometry from landmarks
-    const geometry = this.createFaceGeometry(landmarks.landmarks);
-
-    // Load texture from uploaded image
-    const texture = await this.loadTexture(imageUrl);
-
-    // Create material
-    const material = new THREE.MeshLambertMaterial({
-      map: texture,
-      side: THREE.DoubleSide
+    // Create material with realistic appearance like professional models
+    const material = new THREE.MeshPhongMaterial({
+      color: 0xe8d5c8, // Professional neutral skin tone
+      shininess: 5,
+      specular: 0x222222,
+      side: THREE.FrontSide,
     });
 
     // Create face mesh
     this.faceMesh = new THREE.Mesh(geometry, material);
     this.faceGroup.add(this.faceMesh);
 
-    // Center and scale the face
-    this.centerAndScaleFace();
+    // Position and scale the head properly
+    this.setupHead();
   }
 
-  private createFaceGeometry(landmarks: any[]): THREE.BufferGeometry {
-    const geometry = new THREE.BufferGeometry();
+  private createMaleHeadGeometry(): THREE.BufferGeometry {
+    // Create a professional-quality human head
 
-    // Convert MediaPipe landmarks to Three.js coordinates
-    const vertices = [];
-    const uvs = [];
+    // Create head base with proper anatomy
+    const headGeometry = new THREE.SphereGeometry(1, 128, 64);
+    const positions = headGeometry.attributes.position;
+    const positionArray = positions.array as Float32Array;
 
-    for (const landmark of landmarks) {
-      // Convert from MediaPipe coordinate system to Three.js
-      // MediaPipe: (0,0) is top-left, (1,1) is bottom-right
-      // Three.js: center at origin, Y up
-      const x = (landmark.x - 0.5) * 2; // -1 to 1
-      const y = -(landmark.y - 0.5) * 2; // -1 to 1, flip Y
-      const z = landmark.z * 2; // Scale Z
+    // Apply realistic human head proportions and anatomy
+    for (let i = 0; i < positionArray.length; i += 3) {
+      let x = positionArray[i];
+      let y = positionArray[i + 1];
+      let z = positionArray[i + 2];
 
-      vertices.push(x, y, z);
-      uvs.push(landmark.x, 1 - landmark.y); // Flip Y for UV
+      // Normalize to get direction
+      const length = Math.sqrt(x * x + y * y + z * z);
+      const nx = x / length;
+      const ny = y / length;
+      const nz = z / length;
+
+
+      // Create realistic head proportions (based on human anatomy)
+      let radius = 1.0;
+
+      // Y-axis zones (from top to bottom)
+      if (ny > 0.7) {
+        // Crown/top of head
+        radius = 0.95;
+      } else if (ny > 0.3) {
+        // Forehead and temple area
+        radius = 1.0;
+        if (nz > 0.3) radius *= 1.1; // Forehead prominence
+        if (Math.abs(nx) > 0.7) radius *= 0.95; // Temple depression
+      } else if (ny > 0.0) {
+        // Eye and upper cheek area
+        radius = 1.05;
+        if (nz > 0.5) radius *= 1.15; // Eye socket depth
+        if (Math.abs(nx) > 0.6) radius *= 1.1; // Cheekbone prominence
+
+        // Create eye socket depressions
+        if (Math.abs(nx) > 0.3 && Math.abs(nx) < 0.7 && nz > 0.6) {
+          radius *= 0.9;
+        }
+      } else if (ny > -0.3) {
+        // Nose and mouth area
+        radius = 1.0;
+        if (Math.abs(nx) < 0.2 && nz > 0.5) {
+          // Nose bridge and tip
+          radius *= 1.25;
+        }
+        if (Math.abs(nx) < 0.4 && nz > 0.3) {
+          // Nose sides
+          radius *= 1.1;
+        }
+      } else if (ny > -0.6) {
+        // Lower face and jaw
+        radius = 1.0;
+        if (Math.abs(nx) > 0.4 && nz > 0.2) {
+          radius *= 1.05; // Jaw definition
+        }
+      } else {
+        // Chin area
+        radius = 0.9;
+        if (Math.abs(nx) < 0.3 && nz > 0.2) {
+          radius *= 1.1; // Chin prominence
+        }
+      }
+
+      // Apply transformations for male characteristics
+      const finalX = nx * radius * 0.85; // Head width
+      const finalY = ny * radius * 1.4;  // Head height
+      const finalZ = nz * radius * 0.95; // Head depth
+
+      positionArray[i] = finalX;
+      positionArray[i + 1] = finalY;
+      positionArray[i + 2] = finalZ;
     }
 
-    // Create triangular faces for the face mesh
-    const indices = this.createFaceIndices();
+    // Add neck geometry
+    this.addNeckGeometry(headGeometry, positionArray);
 
-    geometry.setIndex(indices);
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-    geometry.computeVertexNormals();
+    positions.needsUpdate = true;
+    headGeometry.computeVertexNormals();
 
-    return geometry;
+    return headGeometry;
   }
 
-  private createFaceIndices(): number[] {
-    // Define face triangulation based on MediaPipe face mesh topology
-    // This is a simplified version - in production, you'd use the full MediaPipe topology
-    const indices = [];
+  private addNeckGeometry(geometry: THREE.SphereGeometry, positionArray: Float32Array) {
+    // Extend the geometry to include neck area
+    for (let i = 0; i < positionArray.length; i += 3) {
+      const y = positionArray[i + 1];
 
-    // Face contour triangulation (simplified)
-    const faceOval = [
-      10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288,
-      397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136,
-      172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109
-    ];
+      // Create neck extension below the head
+      if (y < -0.8) {
+        const x = positionArray[i];
+        const z = positionArray[i + 2];
 
-    // Create triangles for face oval
-    for (let i = 0; i < faceOval.length - 2; i++) {
-      indices.push(faceOval[0], faceOval[i + 1], faceOval[i + 2]);
+        // Narrow the neck
+        const neckScale = 0.4;
+        positionArray[i] = x * neckScale;
+        positionArray[i + 2] = z * neckScale;
+
+        // Extend downward
+        positionArray[i + 1] = y * 1.5;
+      }
     }
-
-    // Eyes region
-    const leftEye = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
-    const rightEye = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398];
-
-    // Triangulate eyes
-    this.triangulateRegion(leftEye, indices);
-    this.triangulateRegion(rightEye, indices);
-
-    // Mouth region
-    const mouth = [
-      61, 84, 17, 314, 405, 320, 307, 375, 321, 308, 324, 318,
-      402, 317, 14, 87, 178, 88, 95, 185, 40, 39, 37, 0, 267,
-      269, 270, 267, 271, 272, 271, 272
-    ];
-
-    this.triangulateRegion(mouth, indices);
-
-    return indices;
   }
 
-  private triangulateRegion(points: number[], indices: number[]) {
-    // Simple fan triangulation
-    for (let i = 1; i < points.length - 1; i++) {
-      indices.push(points[0], points[i], points[i + 1]);
+  private createFemaleHeadGeometry(): THREE.BufferGeometry {
+    // Create a professional-quality female head
+    const headGeometry = new THREE.SphereGeometry(1, 128, 64);
+    const positions = headGeometry.attributes.position;
+    const positionArray = positions.array as Float32Array;
+
+    // Apply realistic female head proportions and anatomy
+    for (let i = 0; i < positionArray.length; i += 3) {
+      const x = positionArray[i];
+      const y = positionArray[i + 1];
+      const z = positionArray[i + 2];
+
+      // Normalize to get direction
+      const length = Math.sqrt(x * x + y * y + z * z);
+      const nx = x / length;
+      const ny = y / length;
+      const nz = z / length;
+
+      // Create realistic female head proportions
+      let radius = 1.0;
+
+      // Y-axis zones (from top to bottom) - softer features than male
+      if (ny > 0.7) {
+        // Crown/top of head - more rounded
+        radius = 0.93;
+      } else if (ny > 0.3) {
+        // Forehead and temple area - smoother
+        radius = 0.98;
+        if (nz > 0.3) radius *= 1.05; // Less prominent forehead
+        if (Math.abs(nx) > 0.7) radius *= 0.93; // Softer temples
+      } else if (ny > 0.0) {
+        // Eye and upper cheek area - softer
+        radius = 1.02;
+        if (nz > 0.5) radius *= 1.12; // Gentler eye socket depth
+        if (Math.abs(nx) > 0.6) radius *= 1.05; // Softer cheekbones
+
+        // Create gentler eye socket depressions
+        if (Math.abs(nx) > 0.3 && Math.abs(nx) < 0.7 && nz > 0.6) {
+          radius *= 0.92;
+        }
+      } else if (ny > -0.3) {
+        // Nose and mouth area - smaller, more delicate
+        radius = 0.98;
+        if (Math.abs(nx) < 0.15 && nz > 0.5) {
+          // Smaller nose bridge and tip
+          radius *= 1.15;
+        }
+        if (Math.abs(nx) < 0.3 && nz > 0.3) {
+          // Narrower nose sides
+          radius *= 1.05;
+        }
+      } else if (ny > -0.6) {
+        // Lower face and jaw - softer, less angular
+        radius = 0.95;
+        if (Math.abs(nx) > 0.4 && nz > 0.2) {
+          radius *= 1.02; // Softer jaw definition
+        }
+      } else {
+        // Chin area - more pointed, less square
+        radius = 0.85;
+        if (Math.abs(nx) < 0.25 && nz > 0.2) {
+          radius *= 1.05; // Softer chin prominence
+        }
+      }
+
+      // Apply transformations for female characteristics
+      const finalX = nx * radius * 0.78; // Narrower head width
+      const finalY = ny * radius * 1.35; // Slightly shorter height
+      const finalZ = nz * radius * 0.9;  // Less depth
+
+      positionArray[i] = finalX;
+      positionArray[i + 1] = finalY;
+      positionArray[i + 2] = finalZ;
     }
+
+    // Add neck geometry
+    this.addNeckGeometry(headGeometry, positionArray);
+
+    positions.needsUpdate = true;
+    headGeometry.computeVertexNormals();
+
+    return headGeometry;
   }
 
   private async loadTexture(imageUrl: string): Promise<THREE.Texture> {
@@ -117,7 +230,11 @@ export class FaceAvatar {
       loader.load(
         imageUrl,
         (texture) => {
-          texture.flipY = true;
+          texture.flipY = false; // Keep original orientation
+          texture.wrapS = THREE.ClampToEdgeWrapping;
+          texture.wrapT = THREE.ClampToEdgeWrapping;
+          texture.minFilter = THREE.LinearFilter;
+          texture.magFilter = THREE.LinearFilter;
           resolve(texture);
         },
         undefined,
@@ -126,22 +243,18 @@ export class FaceAvatar {
     });
   }
 
-  private centerAndScaleFace() {
+  private setupHead() {
     if (!this.faceMesh) return;
 
-    // Calculate bounding box
-    const box = new THREE.Box3().setFromObject(this.faceMesh);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
+    // Position the head at the center
+    this.faceMesh.position.set(0, 0, 0);
 
-    // Center the face
-    this.faceGroup.position.copy(center.negate());
+    // Scale the head to a reasonable size
+    this.faceMesh.scale.setScalar(1.5);
 
-    // Scale to reasonable size
-    const maxDimension = Math.max(size.x, size.y, size.z);
-    const targetSize = 2;
-    const scale = targetSize / maxDimension;
-    this.faceGroup.scale.setScalar(scale);
+    // Rotate slightly for better viewing angle
+    this.faceMesh.rotation.y = 0.1;
+    this.faceMesh.rotation.x = -0.05;
   }
 
   addGlasses(glassesType: string) {

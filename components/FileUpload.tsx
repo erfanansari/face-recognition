@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { FileDetector } from '@/lib/faceDetection';
 
 interface FileUploadProps {
   onImageUpload: (imageUrl: string) => void;
@@ -21,16 +20,14 @@ export default function FileUpload({ onImageUpload, onLandmarksDetected }: FileU
       const imageUrl = URL.createObjectURL(file);
       onImageUpload(imageUrl);
 
-      // Process face detection
-      const detector = FileDetector.getInstance();
-      const landmarks = await detector.detectFaceLandmarks(file);
+      // Skip face detection - just create mock landmarks for 3D head
+      const mockLandmarks = {
+        landmarks: [], // Empty array since we're not using landmarks
+        width: 400,
+        height: 400
+      };
 
-      if (landmarks) {
-        onLandmarksDetected(landmarks);
-      } else {
-        setError('No face detected in the image. Please try another photo.');
-        return;
-      }
+      onLandmarksDetected(mockLandmarks);
 
     } catch (err) {
       setError('Failed to process image. Please try again.');
@@ -77,7 +74,7 @@ export default function FileUpload({ onImageUpload, onLandmarksDetected }: FileU
         {isProcessing ? (
           <div className="space-y-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-600 dark:text-gray-300">Processing image...</p>
+            <p className="text-gray-600 dark:text-gray-300">Creating 3D avatar...</p>
           </div>
         ) : (
           <div className="space-y-6">
