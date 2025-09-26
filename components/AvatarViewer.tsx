@@ -215,8 +215,13 @@ export default function AvatarViewer({}: AvatarViewerProps) {
           const glasses = gltf.scene.clone();
 
           // Scale and position the glasses properly for the head
-          glasses.scale.setScalar(25); // Match head scaling
-          glasses.position.set(0, 2, 12); // Position in front of eyes
+          glasses.scale.setScalar(2); // Reasonable scale relative to head scale of 25
+
+          // Position glasses at proper eye level on the face
+          glasses.position.set(0, 2, 3); // Eye level on the face
+
+          // Apply standard rotation for proper orientation
+          glasses.rotation.set(0, 0, 0); // Reset any weird rotations
 
           // Setup materials for proper rendering
           glasses.traverse((child) => {
@@ -291,12 +296,16 @@ export default function AvatarViewer({}: AvatarViewerProps) {
   };
 
   const glassesOptions = [
-    { type: 'eye_glasses', label: 'Eye Glasses', emoji: '👓', file: '/sunglasses/eye_glasses.glb' },
-    { type: 'sun_glass_1', label: 'Classic', emoji: '🕶️', file: '/sunglasses/sun_glass (1).glb' },
-    { type: 'sun_glass', label: 'Modern', emoji: '🕶️', file: '/sunglasses/sun_glass.glb' },
-    { type: 'sunglass', label: 'Sport', emoji: '🏃‍♂️', file: '/sunglasses/sunglass.glb' },
-    { type: 'sunglasses_1', label: 'Vintage', emoji: '🌟', file: '/sunglasses/sunglasses (1).glb' },
-    { type: 'sunglasses', label: 'Premium', emoji: '💎', file: '/sunglasses/sunglasses.glb' },
+    { type: 'classic', label: 'Classic', description: 'Timeless aviator style', file: '/sunglasses/classic.glb' },
+    { type: 'modern', label: 'Modern', description: 'Contemporary design', file: '/sunglasses/modern.glb' },
+    { type: 'sport', label: 'Sport', description: 'Active lifestyle', file: '/sunglasses/sport.glb' },
+    { type: 'vintage', label: 'Vintage', description: 'Retro inspired', file: '/sunglasses/vintage.glb' },
+    { type: 'premium', label: 'Premium', description: 'Luxury materials', file: '/sunglasses/premium.glb' },
+    { type: 'designer', label: 'Designer', description: 'Fashion forward', file: '/sunglasses/designer.glb' },
+    { type: 'retro', label: 'Retro', description: 'Pixel art inspired', file: '/sunglasses/retro.glb' },
+    { type: 'aviator', label: 'Aviator', description: 'Military heritage', file: '/sunglasses/aviator.glb' },
+    { type: 'wayfare', label: 'Wayfare', description: 'Iconic rectangle frame', file: '/sunglasses/wayfare.glb' },
+    { type: 'clubmaster', label: 'Clubmaster', description: 'Sophisticated browline', file: '/sunglasses/clubmaster.glb' },
   ];
 
   return (
@@ -388,38 +397,46 @@ export default function AvatarViewer({}: AvatarViewerProps) {
 
         {/* Accessories Panel */}
         {!isLoading && !error && (
-          <div className="lg:w-80">
-            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-700/50 shadow-2xl p-6 sticky top-8">
+          <div className="lg:w-96">
+            <div className="bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-800 shadow-xl p-6 sticky top-8">
 
               {/* Panel Header */}
-              <div className="text-center mb-6">
-                <h3 className="text-xl font-bold text-white mb-2">Accessories</h3>
-                <p className="text-gray-400 text-sm">Choose your perfect style</p>
+              <div className="mb-8">
+                <h3 className="text-2xl font-semibold text-white mb-2">Eyewear Collection</h3>
+                <div className="w-12 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
               </div>
 
-              {/* Glasses Grid */}
-              <div className="grid grid-cols-3 gap-2 mb-6">
+              {/* Glasses List */}
+              <div className="space-y-3 mb-8">
                 {glassesOptions.map((option) => (
                   <button
                     key={option.type}
                     onClick={() => handleGlassesSelect(option.type)}
-                    className={`group relative p-3 rounded-lg border-2 transition-all duration-300 hover:scale-105 ${
+                    className={`w-full p-4 rounded-lg border transition-all duration-200 text-left group ${
                       selectedGlasses === option.type
-                        ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20'
-                        : 'border-gray-600 hover:border-gray-500 bg-gray-800/30'
+                        ? 'border-blue-500 bg-blue-500/5 shadow-md'
+                        : 'border-gray-700 hover:border-gray-600 bg-gray-800/30 hover:bg-gray-800/50'
                     }`}
                   >
-                    <div className="text-xl mb-1 group-hover:scale-110 transition-transform">
-                      {option.emoji}
-                    </div>
-                    <div className="text-xs font-medium text-white">
-                      {option.label}
-                    </div>
-                    {selectedGlasses === option.type && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-white font-medium text-base mb-1">
+                          {option.label}
+                        </div>
+                        <div className="text-gray-400 text-sm">
+                          {option.description}
+                        </div>
                       </div>
-                    )}
+                      <div className={`w-3 h-3 rounded-full border-2 transition-colors ${
+                        selectedGlasses === option.type
+                          ? 'border-blue-500 bg-blue-500'
+                          : 'border-gray-500 group-hover:border-gray-400'
+                      }`}>
+                        {selectedGlasses === option.type && (
+                          <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                        )}
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -428,23 +445,25 @@ export default function AvatarViewer({}: AvatarViewerProps) {
               {selectedGlasses && (
                 <button
                   onClick={() => handleGlassesSelect('')}
-                  className="w-full p-3 rounded-xl border-2 border-red-500/30 bg-red-500/10 hover:bg-red-500/20 transition-all duration-300 group"
+                  className="w-full p-3 rounded-lg border border-gray-600 bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 text-gray-300 hover:text-white"
                 >
-                  <div className="flex items-center justify-center gap-2 text-red-400">
-                    <span className="text-lg group-hover:scale-110 transition-transform">❌</span>
-                    <span className="font-medium">Remove Glasses</span>
+                  <div className="flex items-center justify-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span className="font-medium">Clear Selection</span>
                   </div>
                 </button>
               )}
 
-              {/* Stats/Info */}
-              <div className="mt-6 pt-6 border-t border-gray-700">
-                <div className="text-center">
-                  <p className="text-xs text-gray-500">
-                    Powered by WebGL & Three.js
+              {/* Footer Info */}
+              <div className="mt-8 pt-6 border-t border-gray-800">
+                <div className="text-center space-y-1">
+                  <p className="text-xs text-gray-500 font-medium">
+                    WebGL Powered Rendering
                   </p>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Real-time 3D rendering
+                  <p className="text-xs text-gray-600">
+                    Real-time 3D visualization
                   </p>
                 </div>
               </div>
