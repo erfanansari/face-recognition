@@ -4,17 +4,21 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three-stdlib';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { FaceAvatar } from '@/lib/faceAvatar';
 
 interface AvatarViewerProps {}
 
 export default function AvatarViewer({}: AvatarViewerProps) {
+  const gender = 'male'; // Default to male
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<THREE.Scene>();
   const rendererRef = useRef<THREE.WebGLRenderer>();
   const avatarRef = useRef<THREE.Object3D>();
+  const faceAvatarRef = useRef<FaceAvatar>();
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [selectedGlasses, setSelectedGlasses] = useState<string | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -63,12 +67,15 @@ export default function AvatarViewer({}: AvatarViewerProps) {
 
         setLoadingProgress(40);
 
+        // Initialize FaceAvatar system
+        faceAvatarRef.current = new FaceAvatar(scene);
+
         // Load realistic 3D head model with fallback
         try {
-          await loadFullBodyAvatar(scene);
+          await loadRealisticHead(scene);
         } catch (error) {
-          console.log('Primary model failed, using simple fallback');
-          createSimpleHead(scene);
+          console.log('Primary model failed, using FaceAvatar fallback');
+          await faceAvatarRef.current.createAvatar(gender);
         }
 
         // Add orbit controls
@@ -105,6 +112,9 @@ export default function AvatarViewer({}: AvatarViewerProps) {
 
     return () => {
       // Clean up Three.js resources
+      if (faceAvatarRef.current) {
+        faceAvatarRef.current.dispose();
+      }
       if (rendererRef.current) {
         rendererRef.current.dispose();
       }
@@ -114,7 +124,7 @@ export default function AvatarViewer({}: AvatarViewerProps) {
     };
   }, []);
 
-  const loadFullBodyAvatar = async (scene: THREE.Scene) => {
+  const loadRealisticHead = async (scene: THREE.Scene) => {
     try {
       setLoadingProgress(50);
 
@@ -161,13 +171,13 @@ export default function AvatarViewer({}: AvatarViewerProps) {
             setLoadingProgress(60 + (percentage * 0.2));
           },
           (error) => {
-            console.error('Error loading full-body avatar:', error);
+            console.error('Error loading realistic head:', error);
             reject(error);
           }
         );
       });
     } catch (error) {
-      console.error('Failed to load full-body avatar:', error);
+      console.error('Failed to load realistic head:', error);
       throw error;
     }
   };
@@ -190,6 +200,26 @@ export default function AvatarViewer({}: AvatarViewerProps) {
     avatarRef.current = head;
     setLoadingProgress(100);
   };
+
+  const handleGlassesSelect = (glassesType: string) => {
+    if (faceAvatarRef.current) {
+      if (selectedGlasses === glassesType) {
+        // Remove glasses if same type is selected
+        faceAvatarRef.current.removeGlasses();
+        setSelectedGlasses(null);
+      } else {
+        // Add new glasses
+        faceAvatarRef.current.addGlasses(glassesType);
+        setSelectedGlasses(glassesType);
+      }
+    }
+  };
+
+  const glassesOptions = [
+    { type: 'aviator', label: 'Aviator', emoji: '🕶️' },
+    { type: 'round', label: 'Round', emoji: '👓' },
+    { type: 'square', label: 'Square', emoji: '🤓' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -242,6 +272,42 @@ export default function AvatarViewer({}: AvatarViewerProps) {
               </div>
               <div className="mt-2 text-xs text-gray-400 dark:text-gray-500 text-center">
                 Photorealistic human head model with detailed facial anatomy
+              </div>
+
+              {/* Glasses Selection */}
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-4">
+                  Try On Glasses
+                </h3>
+                <div className="flex justify-center gap-4">
+                  {glassesOptions.map((option) => (
+                    <button
+                      key={option.type}
+                      onClick={() => handleGlassesSelect(option.type)}
+                      className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                        selectedGlasses === option.type
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-400'
+                      }`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {option.label}
+                      </div>
+                    </button>
+                  ))}
+                  {selectedGlasses && (
+                    <button
+                      onClick={() => handleGlassesSelect('')}
+                      className="p-4 rounded-lg border-2 border-red-200 dark:border-red-600 hover:border-red-300 dark:hover:border-red-400 transition-all duration-200"
+                    >
+                      <div className="text-2xl mb-2">❌</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        Remove
+                      </div>
+                    </button>
+                  )}
+                </div>
               </div>
             </>
           )}
