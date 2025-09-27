@@ -292,16 +292,16 @@ export default function AvatarViewer() {
       <div className="relative z-10 pt-8 pb-4">
         <div className="text-center">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
-            Virtual Try-On Studio
+            3D Eyewear Studio
           </h1>
           <p className="text-gray-400 text-lg">
-            Realistic 3D avatar with AI-powered accessories
+            Professional 3D head model with realistic glasses try-on experience
           </p>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex flex-col lg:flex-row gap-6 px-4 lg:px-8 max-w-7xl mx-auto">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 max-w-6xl mx-4 lg:mx-auto mb-8 bg-slate-800/20 backdrop-blur-sm rounded-3xl p-4 lg:p-6 border border-slate-700/30 shadow-xl">
 
         {/* 3D Viewport - Main Focus */}
         <div className="flex-1 relative">
@@ -371,7 +371,7 @@ export default function AvatarViewer() {
 
         {/* Accessories Panel */}
         {!isLoading && !error && (
-          <div className="lg:w-80">
+          <div className="lg:w-72 xl:w-80">
             <div className="bg-gray-900/90 backdrop-blur-xl rounded-3xl border border-gray-700/40 shadow-2xl p-6 sticky top-8 ring-1 ring-white/5">
 
               {/* Panel Header */}
@@ -418,7 +418,10 @@ export default function AvatarViewer() {
               {/* Remove Button */}
               {selectedGlasses && (
                 <button
-                  onClick={() => handleGlassesSelect('')}
+                  onClick={() => {
+                    handleGlassesSelect('');
+                    setSelectedGlasses(null);
+                  }}
                   className="w-full p-3 rounded-2xl border border-red-500/30 bg-gradient-to-r from-red-500/10 to-pink-500/10 hover:from-red-500/20 hover:to-pink-500/20 transition-all duration-300 text-red-400 hover:text-red-300 shadow-lg hover:scale-[1.02] ring-1 ring-red-500/10"
                 >
                   <div className="flex items-center justify-center gap-2">
@@ -434,10 +437,10 @@ export default function AvatarViewer() {
               <div className="mt-8 pt-6 border-t border-gray-700/50">
                 <div className="text-center space-y-1">
                   <p className="text-xs text-gray-500 font-medium">
-                    WebGL Powered Rendering
+                    Real-time 3D Glasses Try-On
                   </p>
                   <p className="text-xs text-gray-600">
-                    Real-time 3D visualization
+                    Professional eyewear visualization
                   </p>
                 </div>
               </div>

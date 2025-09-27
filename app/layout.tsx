@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Virtual Try-On Studio",
-  description: "Realistic 3D head model with virtual glasses try-on",
+  title: "3D Eyewear Studio",
+  description: "Professional 3D head model with realistic glasses try-on experience",
 };
 
 export default function RootLayout({
