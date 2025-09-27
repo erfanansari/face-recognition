@@ -278,12 +278,12 @@ export default function AvatarViewer() {
   };
 
   const glassesOptions = [
-    { type: 'classic', label: 'Classic', description: 'Timeless aviator style', file: '/sunglasses/classic.glb' },
-    { type: 'modern', label: 'Modern', description: 'Contemporary design', file: '/sunglasses/modern.glb' },
-    { type: 'premium', label: 'Premium', description: 'Luxury materials', file: '/sunglasses/premium.glb' },
-    { type: 'designer', label: 'Designer', description: 'Fashion forward', file: '/sunglasses/designer.glb' },
-    { type: 'retro', label: 'Retro', description: 'Pixel art inspired', file: '/sunglasses/retro.glb' },
-    { type: 'clubmaster', label: 'Clubmaster', description: 'Sophisticated browline', file: '/sunglasses/clubmaster.glb' },
+    { type: 'classic', label: 'Square Frame', description: 'Bold rectangular design', file: '/sunglasses/classic.glb' },
+    { type: 'modern', label: 'Oversized', description: 'Large contemporary frames', file: '/sunglasses/modern.glb' },
+    { type: 'premium', label: 'Aviator Gold', description: 'Classic pilot style', file: '/sunglasses/premium.glb' },
+    { type: 'designer', label: 'Round Aviator', description: 'Thin wire frame circles', file: '/sunglasses/designer.glb' },
+    { type: 'retro', label: 'Pixel Art', description: '8-bit gaming style', file: '/sunglasses/retro.glb' },
+    { type: 'clubmaster', label: 'Wayfarer', description: 'Classic black frames', file: '/sunglasses/clubmaster.glb' },
   ];
 
   return (
