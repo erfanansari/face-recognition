@@ -432,18 +432,6 @@ export default function AvatarViewer() {
                   </div>
                 </button>
               )}
-
-              {/* Footer Info */}
-              <div className="mt-8 pt-6 border-t border-gray-700/50">
-                <div className="text-center space-y-1">
-                  <p className="text-xs text-gray-500 font-medium">
-                    Real-time 3D Glasses Try-On
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    Professional eyewear visualization
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         )}
