@@ -10,10 +10,10 @@ import { FaceAvatar } from '@/lib/faceAvatar';
 export default function AvatarViewer() {
   const gender = 'male'; // Default to male
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const sceneRef = useRef<THREE.Scene>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer>(null);
-  const avatarRef = useRef<THREE.Object3D>(null);
-  const faceAvatarRef = useRef<FaceAvatar>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const avatarRef = useRef<THREE.Object3D | null>(null);
+  const faceAvatarRef = useRef<FaceAvatar | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +76,7 @@ export default function AvatarViewer() {
           await loadRealisticHead(scene);
         } catch (error) {
           console.log('Primary model failed, using FaceAvatar fallback', error);
-          await faceAvatarRef.current.createAvatar(gender);
+          await faceAvatarRef.current?.createAvatar(gender);
         }
 
         // Add orbit controls
@@ -233,11 +233,7 @@ export default function AvatarViewer() {
   };
 
   const handleGlassesSelect = async (glassesType: string) => {
-    console.log('Glasses clicked:', glassesType);
-    if (!sceneRef.current) {
-      console.log('Scene not available');
-      return;
-    }
+    if (!sceneRef.current) return;
 
     // Remove current glasses
     if (currentGlassesObject) {
@@ -309,12 +305,12 @@ export default function AvatarViewer() {
 
         {/* 3D Viewport - Main Focus */}
         <div className="flex-1 relative">
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-700/50 shadow-2xl overflow-hidden">
+          <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/60 backdrop-blur-xl rounded-3xl border border-gray-700/30 shadow-2xl overflow-hidden ring-1 ring-white/5">
 
             {/* Error State */}
             {error && (
               <div className="absolute top-4 left-4 right-4 z-20">
-                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 backdrop-blur-sm">
+                <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 backdrop-blur-md shadow-lg">
                   <p className="text-red-400 text-center">{error}</p>
                 </div>
               </div>
@@ -349,14 +345,14 @@ export default function AvatarViewer() {
             {/* 3D Canvas */}
             <canvas
               ref={canvasRef}
-              className="w-full rounded-2xl"
+              className="w-full rounded-3xl"
               style={{ height: '70vh', minHeight: '500px' }}
             />
 
             {/* Controls Overlay */}
             {!isLoading && !error && (
               <div className="absolute bottom-4 left-4 right-4">
-                <div className="bg-black/40 backdrop-blur-md rounded-xl p-3 border border-gray-600/30">
+                <div className="bg-black/30 backdrop-blur-md rounded-2xl p-4 border border-gray-600/20 shadow-lg ring-1 ring-white/5">
                   <div className="flex items-center justify-center gap-6 text-xs text-gray-300">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
@@ -376,12 +372,12 @@ export default function AvatarViewer() {
         {/* Accessories Panel */}
         {!isLoading && !error && (
           <div className="lg:w-80">
-            <div className="bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-800 shadow-xl p-4 sticky top-8">
+            <div className="bg-gray-900/90 backdrop-blur-xl rounded-3xl border border-gray-700/40 shadow-2xl p-6 sticky top-8 ring-1 ring-white/5">
 
               {/* Panel Header */}
               <div className="mb-6">
                 <h3 className="text-xl font-semibold text-white mb-2">Eyewear Collection</h3>
-                <div className="w-10 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                <div className="w-12 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full shadow-sm"></div>
               </div>
 
               {/* Glasses List */}
@@ -390,10 +386,10 @@ export default function AvatarViewer() {
                   <button
                     key={option.type}
                     onClick={() => handleGlassesSelect(option.type)}
-                    className={`w-full p-3 rounded-lg border transition-all duration-200 text-left group ${
+                    className={`w-full p-4 rounded-2xl border transition-all duration-300 text-left group hover:scale-[1.02] ${
                       selectedGlasses === option.type
-                        ? 'border-blue-500 bg-blue-500/5 shadow-md'
-                        : 'border-gray-700 hover:border-gray-600 bg-gray-800/30 hover:bg-gray-800/50'
+                        ? 'border-blue-500/60 bg-gradient-to-r from-blue-500/10 to-purple-500/10 shadow-lg ring-1 ring-blue-500/20'
+                        : 'border-gray-700/50 hover:border-gray-600/70 bg-gray-800/30 hover:bg-gray-800/50 hover:shadow-md'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -405,13 +401,13 @@ export default function AvatarViewer() {
                           {option.description}
                         </div>
                       </div>
-                      <div className={`w-2.5 h-2.5 rounded-full border-2 transition-colors ${
+                      <div className={`w-3 h-3 rounded-full transition-all duration-300 ${
                         selectedGlasses === option.type
-                          ? 'border-blue-500 bg-blue-500'
-                          : 'border-gray-500 group-hover:border-gray-400'
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-500 shadow-lg scale-110'
+                          : 'border-2 border-gray-500 group-hover:border-gray-400 group-hover:scale-110'
                       }`}>
                         {selectedGlasses === option.type && (
-                          <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                          <div className="w-full h-full rounded-full bg-white/20 animate-pulse"></div>
                         )}
                       </div>
                     </div>
@@ -423,7 +419,7 @@ export default function AvatarViewer() {
               {selectedGlasses && (
                 <button
                   onClick={() => handleGlassesSelect('')}
-                  className="w-full p-2.5 rounded-lg border border-gray-600 bg-gray-800/50 hover:bg-gray-700/50 transition-all duration-200 text-gray-300 hover:text-white"
+                  className="w-full p-3 rounded-2xl border border-red-500/30 bg-gradient-to-r from-red-500/10 to-pink-500/10 hover:from-red-500/20 hover:to-pink-500/20 transition-all duration-300 text-red-400 hover:text-red-300 shadow-lg hover:scale-[1.02] ring-1 ring-red-500/10"
                 >
                   <div className="flex items-center justify-center gap-2">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -435,7 +431,7 @@ export default function AvatarViewer() {
               )}
 
               {/* Footer Info */}
-              <div className="mt-6 pt-4 border-t border-gray-800">
+              <div className="mt-8 pt-6 border-t border-gray-700/50">
                 <div className="text-center space-y-1">
                   <p className="text-xs text-gray-500 font-medium">
                     WebGL Powered Rendering
