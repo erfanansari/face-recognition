@@ -42,9 +42,9 @@ export class FaceAvatar {
 
     // Apply realistic human head proportions and anatomy
     for (let i = 0; i < positionArray.length; i += 3) {
-      let x = positionArray[i];
-      let y = positionArray[i + 1];
-      let z = positionArray[i + 2];
+      const x = positionArray[i];
+      const y = positionArray[i + 1];
+      const z = positionArray[i + 2];
 
       // Normalize to get direction
       const length = Math.sqrt(x * x + y * y + z * z);

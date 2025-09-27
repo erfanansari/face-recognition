@@ -6,15 +6,14 @@ import { OrbitControls } from 'three-stdlib';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FaceAvatar } from '@/lib/faceAvatar';
 
-interface AvatarViewerProps {}
 
-export default function AvatarViewer({}: AvatarViewerProps) {
+export default function AvatarViewer() {
   const gender = 'male'; // Default to male
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const sceneRef = useRef<THREE.Scene>();
-  const rendererRef = useRef<THREE.WebGLRenderer>();
-  const avatarRef = useRef<THREE.Object3D>();
-  const faceAvatarRef = useRef<FaceAvatar>();
+  const sceneRef = useRef<THREE.Scene>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer>(null);
+  const avatarRef = useRef<THREE.Object3D>(null);
+  const faceAvatarRef = useRef<FaceAvatar>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +75,7 @@ export default function AvatarViewer({}: AvatarViewerProps) {
         try {
           await loadRealisticHead(scene);
         } catch (error) {
-          console.log('Primary model failed, using FaceAvatar fallback');
+          console.log('Primary model failed, using FaceAvatar fallback', error);
           await faceAvatarRef.current.createAvatar(gender);
         }
 
@@ -127,6 +126,7 @@ export default function AvatarViewer({}: AvatarViewerProps) {
         sceneRef.current.clear();
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadRealisticHead = async (scene: THREE.Scene) => {
@@ -188,24 +188,6 @@ export default function AvatarViewer({}: AvatarViewerProps) {
   };
 
 
-  const createSimpleHead = (scene: THREE.Scene) => {
-    // Create a simple but clean head geometry as last resort
-    const headGeometry = new THREE.SphereGeometry(0.5, 32, 16);
-    const headMaterial = new THREE.MeshPhongMaterial({
-      color: 0xe8d5c8,
-      shininess: 10,
-    });
-
-    const head = new THREE.Mesh(headGeometry, headMaterial);
-    head.position.set(0, 0, 0);
-    head.castShadow = true;
-    head.receiveShadow = true;
-
-    scene.add(head);
-    avatarRef.current = head;
-    setLoadingProgress(100);
-  };
-
   const loadGlassesModel = async (glassesFile: string): Promise<THREE.Object3D> => {
     const loader = new GLTFLoader();
     return new Promise((resolve, reject) => {
@@ -251,7 +233,11 @@ export default function AvatarViewer({}: AvatarViewerProps) {
   };
 
   const handleGlassesSelect = async (glassesType: string) => {
-    if (!sceneRef.current) return;
+    console.log('Glasses clicked:', glassesType);
+    if (!sceneRef.current) {
+      console.log('Scene not available');
+      return;
+    }
 
     // Remove current glasses
     if (currentGlassesObject) {
